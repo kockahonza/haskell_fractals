@@ -21,6 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/kock
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
+- JuicyPixels
+- gloss
+- gloss-juicy
+- Chart
 
 library:
   source-dirs: src
@@ -30,9 +35,8 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
+    - -O1
     - -rtsopts
-    - -with-rtsopts=-N
     dependencies:
     - Fractals
 

@@ -34,7 +34,10 @@ packages:
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
+#
+extra-deps:
+    - git: http://github.com/hpacheco/gloss-juicy 
+      commit: e8fb82f2e335afa7b1f5f792c44ce61ef0cb4664
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a

@@ -3,7 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    cabal-file:
+      size: 1566
+      sha256: 2ae9f14ab04c49932aac0ec7cea70edf6bd3a77d430f1078694014029fe36bc5
+    name: gloss-juicy
+    version: 0.2.3
+    git: http://github.com/hpacheco/gloss-juicy
+    pantry-tree:
+      size: 373
+      sha256: d387876ff33c555f26cbb9446c9c77bdabd10f2b54dc603aba67084e0516d850
+    commit: e8fb82f2e335afa7b1f5f792c44ce61ef0cb4664
+  original:
+    git: http://github.com/hpacheco/gloss-juicy
+    commit: e8fb82f2e335afa7b1f5f792c44ce61ef0cb4664
 snapshots:
 - completed:
     size: 525663
