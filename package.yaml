@@ -36,7 +36,6 @@ executables:
     ghc-options:
     - -O1
     - -rtsopts
-    # - threaded
     dependencies:
     - Fractals
 

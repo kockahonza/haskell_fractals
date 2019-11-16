@@ -46,4 +46,10 @@ When I want a really nice picture I use a range of (-2, 0.001, 2) which takes a 
 - [gloss](https://hackage.haskell.org/package/gloss)
 
 ## Final notes
+The function `main` contains code to generate a lot of fractals, most of which is currently commented out.
+If you want to regenerate any of the ones in the folder `images/` you need to uncomment the right lines and for some also change the parameters of the Fractals.
+The parameters to do so are described in the name of each file.
+
+The function `showFractal` is mostly useless but if you want to view a `Fractal` with the gloss library you can use the function to do that.
+
 In the folder `images/InterestingOnes` are my favorite images some of which were generated with code not now present (sorry for the names of those).
