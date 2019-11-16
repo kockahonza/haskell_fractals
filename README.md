@@ -35,7 +35,7 @@ It should also be said that the shades loop thanks to how the graphics library w
 #### `getColorListColoring`
 This expects a list of PixelRGB8 `colors` and returns a `Coloring` taking integers.
 It the returns the nth color where n is the remainder of dividing the input by the length of `colors`.
-
-heyoo
-awd
-d
+### Some notes on speed
+The `Func`s from `getJuliaStepsFunc` are considerably slower then the ones from `getJuliaNumFunc`.
+With the range defined in the code NumFuncs are rendered in a under a second on my machine while StepsFuncs take a about 15 or so.
+When I want a really nice picture I use a range of (-2, 0.001, 2) which takes a few minutes for NumFuncs and StepsFuncs take about 10-20 (on my machine of course).
