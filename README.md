@@ -35,3 +35,7 @@ It should also be said that the shades loop thanks to how the graphics library w
 #### `getColorListColoring`
 This expects a list of PixelRGB8 `colors` and returns a `Coloring` taking integers.
 It the returns the nth color where n is the remainder of dividing the input by the length of `colors`.
+
+heyoo
+awd
+d
