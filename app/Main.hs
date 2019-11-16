@@ -87,8 +87,8 @@ juliaNum c n x y = (juliaNum c (n-1) x y)**2 + c
 getJuliaNumFunc :: (RealFloat a, Integral b) => Complex a -> b -> Func a a
 getJuliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
 
-jetJuliasStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> a -> a -> b
-jetJuliasStepsFunc c m x y = fst $ head $ filter ((>= m) . snd) [(n, magnitude (juliaNum c n x y)) | n <- [1..]]
+getJuliaStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> a -> a -> b
+getJuliaStepsFunc c m x y = fst $ head $ filter ((>= m) . snd) [(n, magnitude (juliaNum c n x y)) | n <- [1..]]
 
 getJulNumFractal :: (RealFloat a, Show a, Integral b, Show b) => Complex a -> b -> (a, a, a) -> Coloring a -> String -> Fractal a a
 getJulNumFractal c n r col colName = Fractal
@@ -103,7 +103,7 @@ getJulStepsFractal c m r col colName = Fractal
     ("Steps" ++ "_" ++ colName ++ "_" ++ show c ++ "_" ++ show m ++ "_" ++ show r)
     r
     r
-    (jetJuliasStepsFunc c m)
+    (getJuliaStepsFunc c m)
     col
 
 
