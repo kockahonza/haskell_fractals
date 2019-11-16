@@ -39,3 +39,11 @@ It the returns the nth color where n is the remainder of dividing the input by t
 The `Func`s from `getJuliaStepsFunc` are considerably slower then the ones from `getJuliaNumFunc`.
 With the range defined in the code NumFuncs are rendered in a under a second on my machine while StepsFuncs take a about 15 or so.
 When I want a really nice picture I use a range of (-2, 0.001, 2) which takes a few minutes for NumFuncs and StepsFuncs take about 10-20 (on my machine of course).
+
+## Built with
+- [Stack](https://docs.haskellstack.org/en/stable/README)
+- [JuicyPixels](https://hackage.haskell.org/package/JuicyPixels)
+- [gloss](https://hackage.haskell.org/package/gloss)
+
+## Final notes
+In the folder `images/InterestingOnes` are my favorite images some of which were generated with code not now present (sorry for the names of those).
