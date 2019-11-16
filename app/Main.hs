@@ -7,8 +7,6 @@ import Data.List
 
 import Graphics.Gloss hiding (line)
 import Graphics.Gloss.Juicy
-import Graphics.Rendering.Chart.Easy hiding (white)
-import Graphics.Rendering.Chart.Backend.Diagrams
 import Codec.Picture
 
 --------------------------------------------------------------------------------
@@ -34,11 +32,15 @@ myColors = [
 --------------------------------------------------------------------------------
 
 data Fractal a b = Fractal {
+    name     :: String,
     xRange   :: (a, a, a),
     yRange   :: (a, a, a),
     func     :: Func a b,
     coloring :: Coloring b
 }
+
+instance Show (Fractal a b) where
+    show (Fractal name _ _ _ _) = name
 
 type Func a b = (a -> a -> b)
 
@@ -65,7 +67,7 @@ showDynamicImage im = display (InWindow "Nice Window" (800, 800) (0, 0)) white p
         pic = fromMaybe Blank (fromDynamicImage im)
 
 imageFromFractal :: (RealFrac a) => Fractal a b -> DynamicImage
-imageFromFractal (Fractal (xMin, xStep, xMax) (yMin, yStep, yMax) func col) = ImageRGB8 $ generateImage f
+imageFromFractal (Fractal _ (xMin, xStep, xMax) (yMin, yStep, yMax) func col) = ImageRGB8 $ generateImage f
         (round ((xMax - xMin) / xStep)) (round ((yMax - yMin) / yStep))
     where
         f :: Int -> Int -> PixelRGB8
@@ -74,7 +76,7 @@ imageFromFractal (Fractal (xMin, xStep, xMax) (yMin, yStep, yMax) func col) = Im
 savePngFractal :: (RealFrac a) => Fractal a b -> IO ()
 savePngFractal fractal = do
     let im = imageFromFractal fractal
-    savePngImage "qwer.png" im
+    savePngImage ("images/" ++ show fractal ++ ".png") im
 
 --------------------------------------------------------------------------------
 
@@ -91,23 +93,27 @@ juliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
 juliaStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> Func a b
 juliaStepsFunc c m = juliaSteps c m
 
-julNumColorfulFractal = Fractal 
-    (-2, 0.005, 2) 
-    (-2, 0.005, 2)
-    (juliaNumFunc ((-0.79) :+ 0.15) 6)
-    (colorListColoring myColors . round)
-julNumRedFractal = Fractal
-    (-2, 0.005, 2)
-    (-2, 0.005, 2)
-    (juliaNumFunc((-0.79) :+ 0.15) 6)
-    (redLinearColoring 2)
+getJulNumFractal :: (RealFloat a, Show a, Integral b, Show b) => Complex a -> b -> (a, a, a) -> Coloring a -> String -> Fractal a a
+getJulNumFractal c n r col colName = Fractal
+    (show c ++ "_" ++ show n ++ "_" ++ show r ++ "_" ++ colName)
+    r
+    r
+    (juliaNumFunc c n)
+    col
+
+julNumBasicRed = getJulNumFractal (1 :+ 1) 2 (-2, 0.005, 2) (redLinearColoring 2) "redLinear 2"
+
+julNum1Col = getJulNumFractal ((-0.79) :+ 0.15) 6 (-2, 0.005, 2) (colorListColoring myColors . round) "myColors coloring"
+julNum1Red = getJulNumFractal ((-0.79) :+ 0.15) 6 (-2, 0.005, 2) (redLinearColoring 2) "redLinear 2"
 
 julStepsRedFractal = Fractal 
+    ""
     (-2, 0.005, 2)
     (-2, 0.005, 2)
     (juliaStepsFunc ((-0.79) :+ 0.15) 2)
     (redLinearColoring 2 . fromIntegral)
 julStepsColorfulFractal = Fractal 
+    ""
     (-2, 0.005, 2)
     (-2, 0.005, 2)
     (juliaStepsFunc ((-0.79) :+ 0.15) 2)
@@ -115,5 +121,4 @@ julStepsColorfulFractal = Fractal
 
 main :: IO ()
 main = do
-    let im = imageFromFractal julNumColorfulFractal
-    savePngImage "LOL.png" im
+    mapM_ (\n -> savePngFractal (getJulNumFractal (1 :+ 1) n (-2, 0.005, 2) (colorListColoring myColors . round) "myColors coloring")) [1..6]
