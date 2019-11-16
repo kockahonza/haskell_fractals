@@ -84,21 +84,18 @@ juliaNum :: (RealFloat a, Integral b) => Complex a -> b -> a -> a -> Complex a
 juliaNum c 1 x y = x :+ y
 juliaNum c n x y = (juliaNum c (n-1) x y)**2 + c
 
-juliaSteps :: (RealFloat a, Integral b) => Complex a -> a -> a -> a -> b
-juliaSteps c m x y = fst $ head $ filter ((>= m) . snd) [(n, magnitude (juliaNum c n x y)) | n <- [1..]]
+juliaStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> a -> a -> b
+juliaStepsFunc c m x y = fst $ head $ filter ((>= m) . snd) [(n, magnitude (juliaNum c n x y)) | n <- [1..]]
 
-juliaNumFunc :: (RealFloat a, Integral b) => Complex a -> b -> Func a a
-juliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
-
-juliaStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> Func a b
-juliaStepsFunc c m = juliaSteps c m
+getJuliaNumFunc :: (RealFloat a, Integral b) => Complex a -> b -> Func a a
+getJuliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
 
 getJulNumFractal :: (RealFloat a, Show a, Integral b, Show b) => Complex a -> b -> (a, a, a) -> Coloring a -> String -> Fractal a a
 getJulNumFractal c n r col colName = Fractal
     ("Num" ++ "_" ++ colName ++ "_" ++ show c ++ "_" ++ show n ++ "_" ++ show r)
     r
     r
-    (juliaNumFunc c n)
+    (getJuliaNumFunc c n)
     col
 
 getJulStepsFractal :: (RealFloat a, Show a, Integral b, Show b) => Complex a -> a -> (a, a, a) -> Coloring b -> String -> Fractal a b
@@ -121,13 +118,13 @@ getJulNumBasicCol n = getJulNumFractal (1 :+ 1) n range (colorListColoring myCol
 julNum1Col = getJulNumFractal ((-0.79) :+ 0.15) 6 range (colorListColoring myColors . round) "myColors coloring"
 julNum1Red = getJulNumFractal ((-0.79) :+ 0.15) 6 range (redLinearColoring 2) "redLinear 2"
 
-julSteps1Red = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (redLinearColoring 2 . fromIntegral) "redLinear 2"
+julSteps1Red = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (redLinearColoring 10 . fromIntegral) "redLinear 10"
 julSteps1Col = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (colorListColoring myColors) "myColors coloring"
 
 julNum2Col = getJulNumFractal (0.28 :+ 0.008) 6 range (colorListColoring myColors . round) "myColors coloring"
 julNum2Red = getJulNumFractal (0.28 :+ 0.008) 6 range (redLinearColoring 2) "redLinear 2"
 
-julSteps2Red = getJulStepsFractal (0.28 :+ 0.008) 2 range (redLinearColoring 2 . fromIntegral) "redLinear 2"
+julSteps2Red = getJulStepsFractal (0.28 :+ 0.008) 2 range (redLinearColoring 1 . fromIntegral) "redLinear 1"
 julSteps2Col = getJulStepsFractal (0.28 :+ 0.008) 2 range (colorListColoring myColors) "myColors coloring"
 
 main :: IO ()
