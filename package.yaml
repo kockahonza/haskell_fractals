@@ -25,7 +25,6 @@ dependencies:
 - JuicyPixels
 - gloss
 - gloss-juicy
-- Chart
 
 library:
   source-dirs: src
@@ -37,6 +36,7 @@ executables:
     ghc-options:
     - -O1
     - -rtsopts
+    # - threaded
     dependencies:
     - Fractals
 

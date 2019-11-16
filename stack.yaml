@@ -38,6 +38,12 @@ packages:
 extra-deps:
     - git: http://github.com/hpacheco/gloss-juicy 
       commit: e8fb82f2e335afa7b1f5f792c44ce61ef0cb4664
+    # - git: https://github.com/timbod7/haskell-chart
+    #   commit: 65606988864938f71ea79e3bc09872e7bab54f19
+    #   subdirs:
+    #     - chart-cairo
+    # - git: https://github.com/gtk2hs/gtk2hs
+    #   commit: 13258345dbb92830bc3b284655ae02f4f7e5c64c
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a

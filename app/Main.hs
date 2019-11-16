@@ -3,25 +3,13 @@ module Main where
 import Data.Maybe
 import Data.Complex
 import Data.Char
+import Data.List
 
-import Graphics.Gloss
+import Graphics.Gloss hiding (line)
 import Graphics.Gloss.Juicy
+import Graphics.Rendering.Chart.Easy hiding (white)
+import Graphics.Rendering.Chart.Backend.Diagrams
 import Codec.Picture
-import Data.Hex
-
-type Func = (Float -> Float -> PixelRGB8)
-
-showDynamicImage :: DynamicImage -> IO ()
-showDynamicImage im = display (InWindow "Nice Window" (800, 800) (0, 0)) white pic
-    where
-        pic = fromMaybe Blank (fromDynamicImage im)
-
-imageFromFuncInRange :: Int -> Float -> Int -> Int -> Float -> Int -> Func -> DynamicImage
-imageFromFuncInRange xMin xStep xMax yMin yStep yMax f = ImageRGB8 $ generateImage offsetF
-        (round (fromIntegral (xMax - xMin) / xStep)) (round (fromIntegral (yMax - yMin) / yStep))
-    where
-        offsetF :: Int -> Int -> PixelRGB8
-        offsetF x y = f (fromIntegral xMin + xStep * fromIntegral x) (fromIntegral yMin + yStep * fromIntegral y)
 
 --------------------------------------------------------------------------------
 
@@ -31,50 +19,101 @@ hexStrToPix ['#', r1, r2, g1, g2, b1, b2] = PixelRGB8 (16 * hexCharToInt r1 + he
         hexCharToInt :: Char -> Pixel8
         hexCharToInt = fromJust . flip lookup (zip (['0'..'9'] ++ ['A'..'F']) [0..]) . toUpper
 
-testFunc :: Func
--- testFunc x y = PixelRGB8 (fromIntegral ((round x) `mod` 256)) (fromIntegral ((round y) `mod` 256)) 0
-testFunc x y
-  | abs x == 100 || abs y == 100 = PixelRGB8 0 0 0
-  | otherwise = PixelRGB8 255 255 255
-
+myColors :: [PixelRGB8]
 myColors = [
-    (0, hexStrToPix "#845ec2"),
-    (1, hexStrToPix "#d65db1"),
-    (2, hexStrToPix "#ff6f91"),
-    (3, hexStrToPix "#ff9671"),
-    (4, hexStrToPix "#ffc75f"),
-    (5, hexStrToPix "#f9f871"),
-    (6, hexStrToPix "#008f7a"),
-    (7, hexStrToPix "#0081cf")
+    hexStrToPix "#845ec2",
+    hexStrToPix "#d65db1",
+    hexStrToPix "#ff6f91",
+    hexStrToPix "#ff9671",
+    hexStrToPix "#ffc75f",
+    hexStrToPix "#f9f871",
+    hexStrToPix "#008f7a",
+    hexStrToPix "#0081cf"
            ]
 
-juliaFunc :: Complex Float -> Int -> Func
--- juliaFunc c n x y = PixelRGB8 (round (mag * (255 / 1000000000))) 0 0
-juliaFunc c n x y
-  | mag <= 2 = hexStrToPix "#845ec2"
-  | mag <= 3 = hexStrToPix "#d65db1"
-  | mag <= 7 = hexStrToPix "#ff6f91"
-  | logBase 10 mag <= 6 = hexStrToPix "#ff9671"
-  | logBase 10 mag <= 7 = hexStrToPix "#ffc75f"
-  | logBase 10 mag <= 9 = hexStrToPix "#f9f871"
-  | logBase 10 mag <= 10 = hexStrToPix "#008f7a"
-  | logBase 10 mag <= 12 = hexStrToPix "#0081cf"
-  | otherwise = hexStrToPix "#fbeaff"
-    where
-        mag = magnitude (zJ c n x y)
+--------------------------------------------------------------------------------
 
-juliaFunc2 :: Complex Float -> Func
-juliaFunc2 c x y = PixelRGB8 (round ((fromIntegral n) * (255 / 10))) 0 0
--- juliaFunc2 c x y = fromMaybe (hexStrToPix "#000000") $ lookup n myColors
-    where
-        n :: Int
-        n = fst $ head $ filter ((>= 2) . snd) [(n, magnitude (zJ c n x y)) | n <- [1..]]
+data Fractal a b = Fractal {
+    xRange   :: (a, a, a),
+    yRange   :: (a, a, a),
+    func     :: Func a b,
+    coloring :: Coloring b
+}
 
-zJ :: Complex Float -> Int -> Float -> Float -> Complex Float
-zJ c 1 x y = x :+ y
-zJ c n x y = (zJ c (n-1) x y)**2 + c
+type Func a b = (a -> a -> b)
+
+type Coloring a = (a -> PixelRGB8)
+
+--------------------------------------------------------------------------------
+
+colorFunc :: Func a b -> Coloring b -> (a -> a -> PixelRGB8)
+colorFunc f c = curry (c . uncurry f)
+
+redLinearColoring :: (RealFrac a) => a -> Coloring a
+redLinearColoring m n = PixelRGB8 (round (255 * (n / m))) 0 0
+
+colorListColoring :: (Integral a) => [PixelRGB8] -> Coloring a
+colorListColoring colors n = colors !! m
+    where
+        m = fromIntegral n `mod` length colors
+
+--------------------------------------------------------------------------------
+
+showDynamicImage :: DynamicImage -> IO ()
+showDynamicImage im = display (InWindow "Nice Window" (800, 800) (0, 0)) white pic
+    where
+        pic = fromMaybe Blank (fromDynamicImage im)
+
+imageFromFractal :: (RealFrac a) => Fractal a b -> DynamicImage
+imageFromFractal (Fractal (xMin, xStep, xMax) (yMin, yStep, yMax) func col) = ImageRGB8 $ generateImage f
+        (round ((xMax - xMin) / xStep)) (round ((yMax - yMin) / yStep))
+    where
+        f :: Int -> Int -> PixelRGB8
+        f x y = (colorFunc func col) (xMin + xStep * fromIntegral x) (yMin + yStep * fromIntegral y)
+
+savePngFractal :: (RealFrac a) => Fractal a b -> IO ()
+savePngFractal fractal = do
+    let im = imageFromFractal fractal
+    savePngImage "qwer.png" im
+
+--------------------------------------------------------------------------------
+
+juliaNum :: (RealFloat a, Integral b) => Complex a -> b -> a -> a -> Complex a
+juliaNum c 1 x y = x :+ y
+juliaNum c n x y = (juliaNum c (n-1) x y)**2 + c
+
+juliaSteps :: (RealFloat a, Integral b) => Complex a -> a -> a -> a -> b
+juliaSteps c m x y = fst $ head $ filter ((>= m) . snd) [(n, magnitude (juliaNum c n x y)) | n <- [1..]]
+
+juliaNumFunc :: (RealFloat a, Integral b) => Complex a -> b -> Func a a
+juliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
+
+juliaStepsFunc :: (RealFloat a, Integral b) => Complex a -> a -> Func a b
+juliaStepsFunc c m = juliaSteps c m
+
+julNumColorfulFractal = Fractal 
+    (-2, 0.005, 2) 
+    (-2, 0.005, 2)
+    (juliaNumFunc ((-0.79) :+ 0.15) 6)
+    (colorListColoring myColors . round)
+julNumRedFractal = Fractal
+    (-2, 0.005, 2)
+    (-2, 0.005, 2)
+    (juliaNumFunc((-0.79) :+ 0.15) 6)
+    (redLinearColoring 2)
+
+julStepsRedFractal = Fractal 
+    (-2, 0.005, 2)
+    (-2, 0.005, 2)
+    (juliaStepsFunc ((-0.79) :+ 0.15) 2)
+    (redLinearColoring 2 . fromIntegral)
+julStepsColorfulFractal = Fractal 
+    (-2, 0.005, 2)
+    (-2, 0.005, 2)
+    (juliaStepsFunc ((-0.79) :+ 0.15) 2)
+    (colorListColoring myColors)
 
 main :: IO ()
 main = do
-    let im  = imageFromFuncInRange (-2) 0.005 2 (-2) 0.005 2 (juliaFunc2 ((0.28) :+ 0.008))
-    savePngImage "12.png" im
+    let im = imageFromFractal julNumColorfulFractal
+    savePngImage "LOL.png" im
