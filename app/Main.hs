@@ -80,7 +80,7 @@ imageFromFractal (Fractal _ (xMin, xStep, xMax) (yMin, yStep, yMax) func col) = 
         (round ((xMax - xMin) / xStep)) (round ((yMax - yMin) / yStep))
     where
         f :: Int -> Int -> PixelRGB8
-        f x y = (colorFunc func col) (xMin + xStep * fromIntegral x) (yMin + yStep * fromIntegral y)
+        f x y = colorFunc func col (xMin + xStep * fromIntegral x) (yMin + yStep * fromIntegral y)
 
 savePngFractal :: (RealFrac a) => Fractal a b -> IO ()
 savePngFractal fractal = do
@@ -93,7 +93,7 @@ savePngFractal fractal = do
 
 juliaNum :: (RealFloat a, Integral b) => Complex a -> b -> a -> a -> Complex a
 juliaNum c 1 x y = x :+ y
-juliaNum c n x y = (juliaNum c (n-1) x y)**2 + c
+juliaNum c n x y = (juliaNum c (n-1) x y)**3 + (0 :+ (-1))
 
 getJuliaNumFunc :: (RealFloat a, Integral b) => Complex a -> b -> Func a a
 getJuliaNumFunc c n = curry $ magnitude . uncurry (juliaNum c n)
@@ -117,7 +117,7 @@ getJulStepsFractal c m r col colName = Fractal
     (getJuliaStepsFunc c m)
     col
 
-range = (-2, 0.005, 2)
+range = (-2, 0.5, 2)
 
 getJulNumBasicRed :: Int -> Fractal Double Double
 getJulNumBasicRed n = getJulNumFractal (1 :+ 1) n range (getRedLinColoring 2) "redLinear 2"
@@ -128,24 +128,53 @@ getJulNumBasicCol n = getJulNumFractal (1 :+ 1) n range (getColorListColoring my
 julNum1Col = getJulNumFractal ((-0.79) :+ 0.15) 6 range (getColorListColoring myColors . round) "myColors coloring"
 julNum1Red = getJulNumFractal ((-0.79) :+ 0.15) 6 range (getRedLinColoring 2) "redLinear 2"
 
-julSteps1Red = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (getRedLinColoring 10 . fromIntegral) "redLinear 10"
-julSteps1Col = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (getColorListColoring myColors) "myColors coloring"
-
 julNum2Col = getJulNumFractal (0.28 :+ 0.008) 6 range (getColorListColoring myColors . round) "myColors coloring"
 julNum2Red = getJulNumFractal (0.28 :+ 0.008) 6 range (getRedLinColoring 2) "redLinear 2"
+
+julStepsBasicRed = getJulStepsFractal (2 :+ 2) 2 range (getRedLinColoring 10 . fromIntegral) "redLinear 10"
+
+julSteps1Red = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (getRedLinColoring 10 . fromIntegral) "redLinear 10"
+julSteps1Col = getJulStepsFractal ((-0.79) :+ 0.15) 2 range (getColorListColoring myColors) "myColors coloring"
 
 julSteps2Red = getJulStepsFractal (0.28 :+ 0.008) 2 range (getRedLinColoring 10 . fromIntegral) "redLinear 10"
 julSteps2Col = getJulStepsFractal (0.28 :+ 0.008) 2 range (getColorListColoring myColors) "myColors coloring"
 
+anotherColoring :: (RealFrac a) => a -> Coloring a
+anotherColoring m n = PixelRGB8 (round (255 * (n / m))) 0 0
+
+sinFunc :: (Floating a) => Func a a
+sinFunc x y = abs (y - sin x)
+
+sinFractal = Fractal
+    "sinFrac_recLin_1"
+    (-4, 0.001, 4)
+    (-4, 0.001, 4)
+    sinFunc
+    (anotherColoring 1)
+
+complexLogFunc :: (RealFloat a) => Func a a
+complexLogFunc x y = magnitude (cos t :+ sin t)
+    where
+        t = magnitude (x :+ y)
+
+complexLogFractal = Fractal
+    "complexLogFrac_recLin_1"
+    (-4, 0.001, 4)
+    (-4, 0.001, 4)
+    complexLogFunc
+    (anotherColoring 1)
+
 main :: IO ()
 main = do
-    mapM_ (\n -> savePngFractal (getJulNumBasicRed n)) [1..6]
+    savePngFractal complexLogFractal
+    -- mapM_ (\n -> savePngFractal (getJulNumBasicRed n)) [1..6]
     -- mapM_ (\n -> savePngFractal (getJulNumBasicCol n)) [1..6]
     -- savePngFractal julNum1Red
     -- savePngFractal julNum1Col
     -- savePngFractal julNum2Red
     -- savePngFractal julNum2Col
 
+    -- savePngFractal julStepsBasicRed
     -- savePngFractal julSteps1Red
     -- savePngFractal julSteps1Col
     -- savePngFractal julSteps2Red
